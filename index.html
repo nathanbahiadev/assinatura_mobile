@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width minimum-scale=1">
+    <title>POC Assinatura Digital</title>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #ccc;
+            padding: 20px 10px;
+            font-family: monospace;
+        }
+
+        div.signature-form {
+            margin: 30px auto;
+        }
+
+        canvas.canvas-signature {
+            background: white;
+            border: none;
+            margin: 10px auto;
+            display: block;
+            width: 100%;
+        }
+
+        canvas.canvas-signature.invalid {
+            border: solid 1px red
+        }
+
+        button {
+            border: none;
+            border-radius: 0;
+            padding: 10px 20px;
+            font-family: inherit;
+            font-weight: bold;
+            background: #058915;
+            color: white
+        }
+
+        button.btn-undo-signature {
+            background: #484848;
+        }
+
+        button.btn-clear-signature {
+            background: #dd1500;
+        }
+    </style>
+</head>
+<body>
+
+<h1>POC: Assinatura em Mobile</h1><br>
+<small>Desenvolvido em 04/05/2022</small>
+<hr>
+
+<!-- Assinatura 1 -->
+<div class="signature-form">
+    <h2>Assinatura 1</h2>
+    <canvas class="canvas-signature" data-id="1"></canvas>
+    <button class="btn-undo-signature" data-id="1">Desfazer</button>
+    <button class="btn-clear-signature" data-id="1">Limpar</button>
+    <input  class="input-encoded-signature" data-id="1" type="hidden">
+</div>
+
+<!-- Assinatura 2 -->
+<div class="signature-form">
+    <h2>Assinatura 2</h2>
+    <canvas class="canvas-signature" data-id="2"></canvas>
+    <button class="btn-undo-signature" data-id="2">Desfazer</button>
+    <button class="btn-clear-signature" data-id="2">Limpar</button>
+    <input  class="input-encoded-signature" data-id="2" type="hidden">
+</div>
+
+<!-- Assinatura 3 -->
+<div class="signature-form">
+    <h2>Assinatura 3</h2>
+    <canvas class="canvas-signature" data-id="3"></canvas>
+    <button class="btn-undo-signature" data-id="3">Desfazer</button>
+    <button class="btn-clear-signature" data-id="3">Limpar</button>
+    <input  class="input-encoded-signature" data-id="3" type="hidden">
+</div>
+
+<button id="submit-signatures">Validar assinaturas</button>
+
+<script>
+    for (let signature of document.getElementsByClassName('canvas-signature')) {
+        const signatureId = signature.dataset.id
+        const signatureEncodedInput = document.querySelector(`.input-encoded-signature[data-id="${ signatureId }"]`)
+        const signaturePad = new SignaturePad(signature)
+
+        signature.addEventListener('touchend', function () {
+            signatureEncodedInput.value = signaturePad.toDataURL()
+        })
+
+        document.querySelector(`.btn-clear-signature[data-id="${ signatureId }"]`).addEventListener('click', function () {
+            signaturePad.clear()
+            signatureEncodedInput.value = ''
+        })
+
+        document.querySelector(`.btn-undo-signature[data-id="${ signatureId }"]`).addEventListener('click', function () {
+            const data = signaturePad.toData()
+            if (data) {
+                data.pop() && signaturePad.fromData(data)
+                data.length
+                    ? signatureEncodedInput.value = signaturePad.toDataURL()
+                    : signatureEncodedInput.value = ''
+            }
+        })
+
+
+    }
+
+    document.getElementById('submit-signatures').addEventListener('click', function () {
+        const signatures = document.getElementsByClassName('input-encoded-signature')
+        let invalid = false
+
+        for (let signature of signatures) {
+            const signatureId = signature.dataset.id
+            const signatureCanvas = document.querySelector(`.canvas-signature[data-id="${ signatureId }"]`)
+            if (signature.value === "") {
+                invalid = true
+                signatureCanvas.classList.add('invalid')
+            } else {
+                signatureCanvas.classList.remove('invalid')
+            }
+        }
+
+        invalid
+            ? alert("Assine em todos os campos para prosseguir")
+            : alert("Parabéns, todos os campos foram assinados")
+    })
+</script>
+</body>
+</html>
